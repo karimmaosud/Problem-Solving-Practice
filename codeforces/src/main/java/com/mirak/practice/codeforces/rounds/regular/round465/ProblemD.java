@@ -1,4 +1,4 @@
-package com.mirak.practice.codeforces.rounds.round465;
+package com.mirak.practice.codeforces.rounds.regular.round465;
 
 import java.io.BufferedReader;
 import java.io.IOException;
