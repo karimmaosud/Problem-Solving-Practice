@@ -40,3 +40,4 @@ mirak-practice.iml
 .idea/*
 codeforces/codeforces.iml
 topcoder/topcoder.iml
+*.xml
