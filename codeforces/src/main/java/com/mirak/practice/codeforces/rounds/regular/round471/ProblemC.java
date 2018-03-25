@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class ProblemC {
-  private static final long NEXTMAX = 1000000000000L;
+  private static final long MAXN = 1000000000000L; // 10^12
 
   public static void main(String[] args) throws IOException {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -45,7 +45,7 @@ public class ProblemC {
   }
 
   private static boolean addToList(long num){
-    return num <= (NEXTMAX) || !hasSquareRoot(num);
+    return num <= (MAXN) || !hasSquareRoot(num);
   }
 
   private static boolean hasSquareRoot(long num){
@@ -61,12 +61,12 @@ public class ProblemC {
       res = (right - left) + 1;
     }
 
-    if(R > NEXTMAX){
-      if(L <= NEXTMAX) {
-        L = NEXTMAX + 1;
+    if(R > MAXN){
+      if(L <= MAXN) {
+        L = MAXN + 1;
       }
       left = (int) Math.ceil(Math.sqrt(L));
-      right = getMysteriousCount(R, false);
+      right = floorSquareRoot(R);
       if(right >= left){
         res += (right - left) + 1;
       }
@@ -95,7 +95,7 @@ public class ProblemC {
   }
 
 
-  private static int getMysteriousCount(long key, boolean lowerBound){
+  private static int floorSquareRoot(long key){
     int low = 1000001;
     int high = 1000000000;
     while(low <= high) {
@@ -108,9 +108,6 @@ public class ProblemC {
       }else{
         return mid;
       }
-    }
-    if(lowerBound) {
-      return low;
     }
     return high;
   }
