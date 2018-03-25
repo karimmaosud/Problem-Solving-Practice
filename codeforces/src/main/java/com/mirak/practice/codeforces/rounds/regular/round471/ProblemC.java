@@ -1,10 +1,7 @@
 package com.mirak.practice.codeforces.rounds.regular.round471;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.*;
+import java.util.*;
 
 public class ProblemC {
   private static final long MAXN = 1000000000000L; // 10^12
@@ -40,7 +37,6 @@ public class ProblemC {
         }
       }
     }
-
     return nums;
   }
 
@@ -60,7 +56,6 @@ public class ProblemC {
     if(right >= left){
       res = (right - left) + 1;
     }
-
     if(R > MAXN){
       if(L <= MAXN) {
         L = MAXN + 1;
@@ -71,7 +66,6 @@ public class ProblemC {
         res += (right - left) + 1;
       }
     }
-
     return res;
   }
 
