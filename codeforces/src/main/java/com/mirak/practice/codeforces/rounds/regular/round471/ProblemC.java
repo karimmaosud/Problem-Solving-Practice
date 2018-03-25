@@ -88,7 +88,6 @@ public class ProblemC {
     return high;
   }
 
-
   private static int floorSquareRoot(long key){
     int low = 1000001;
     int high = 1000000000;
