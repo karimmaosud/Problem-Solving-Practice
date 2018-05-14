@@ -1,4 +1,4 @@
-package com.mirak.practice.kickstart;
+package com.mirak.google.kickstart;
 
 public class ProblemB {
 
