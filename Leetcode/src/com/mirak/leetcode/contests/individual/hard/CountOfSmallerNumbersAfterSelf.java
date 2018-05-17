@@ -1,4 +1,4 @@
-package com.mirak.leetcode.contests.individual;
+package com.mirak.leetcode.contests.individual.hard;
 
 import java.util.ArrayList;
 import java.util.List;
