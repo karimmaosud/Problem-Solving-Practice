@@ -40,10 +40,5 @@ mirak-practice.iml
 .idea/*
 *.xml
 
-Codeforces/Codeforces.iml
-CSAcadmy/CSAcadmy.iml
-Google/Google.iml
-Leetcode/Leetcode.iml
-Topcoder/Topcoder.iml
-CareerCup/CareerCup.iml
 src/*
+*/*.iml
