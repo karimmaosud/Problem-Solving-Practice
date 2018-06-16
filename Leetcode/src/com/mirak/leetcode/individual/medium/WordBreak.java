@@ -36,6 +36,7 @@ public class WordBreak {
     if(s.length() == 0) {
       return wordDict.contains(s);
     }
+
     Trie trie = new Trie();
     for(String word: wordDict) {
       trie.insertWord(word);
