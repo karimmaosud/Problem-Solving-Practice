@@ -8,16 +8,16 @@ import java.util.Map.Entry;
 
 public class WalkingRobotSimulation {
 
-  private static final int INF = 1000000000;
+  private final int INF = 1000000000;
 
-  private static enum Direction {
+  private enum Direction {
     NORTH, SOUTH, EAST, WEST
   }
 
-  private static Direction[] rotationDirections = {Direction.NORTH, Direction.EAST, Direction.SOUTH,
+  private Direction[] rotationDirections = {Direction.NORTH, Direction.EAST, Direction.SOUTH,
       Direction.WEST};
 
-  public static int robotSim(int[] commands, int[][] obstacles) {
+  public int robotSim(int[] commands, int[][] obstacles) {
 
     int ans = 0;
 
@@ -64,7 +64,7 @@ public class WalkingRobotSimulation {
     return ans;
   }
 
-  private static void initMaps(int[][] obstacles, Map<Integer, ArrayList<Integer>> xMap,
+  private void initMaps(int[][] obstacles, Map<Integer, ArrayList<Integer>> xMap,
       Map<Integer, ArrayList<Integer>> yMap) {
     for (int i = 0; i < obstacles.length; i++) {
       int x = obstacles[i][0];
@@ -78,13 +78,13 @@ public class WalkingRobotSimulation {
     sortMapEntries(yMap);
   }
 
-  private static void sortMapEntries(Map<Integer, ArrayList<Integer>> map) {
+  private void sortMapEntries(Map<Integer, ArrayList<Integer>> map) {
     for (Entry<Integer, ArrayList<Integer>> entry : map.entrySet()) {
       Collections.sort(entry.getValue());
     }
   }
 
-  private static int getSmallestGreater(ArrayList<Integer> list, int key) {
+  private int getSmallestGreater(ArrayList<Integer> list, int key) {
     if (list == null) {
       return INF;
     }
@@ -104,7 +104,7 @@ public class WalkingRobotSimulation {
     return list.get(low);
   }
 
-  private static int getMaximumSmaller(ArrayList<Integer> list, int key) {
+  private int getMaximumSmaller(ArrayList<Integer> list, int key) {
     if (list == null) {
       return INF;
     }
@@ -124,25 +124,18 @@ public class WalkingRobotSimulation {
     return list.get(low);
   }
 
-  private static boolean obstacleFound(int start, int end, int obstacle) {
+  private boolean obstacleFound(int start, int end, int obstacle) {
     if (obstacle == INF) {
       return false;
     }
     return obstacle >= Math.min(start, end) && obstacle <= Math.max(start, end);
   }
 
-  private static int beforeObstaclePosition(int position, Direction direction) {
+  private int beforeObstaclePosition(int position, Direction direction) {
 
     if (direction == Direction.EAST || direction == Direction.NORTH) {
       return position - 1;
     }
     return position + 1;
   }
-
-  public static void main(String[] args) {
-    int[] moves = {7,-2,-2,7,5};
-    int[][] obstacles = {{-3,2},{-2,1},{0,1},{-2,4},{-1,0},{-2,-3},{0,-3},{4,4},{-3,3},{2,2}};
-    System.out.println(robotSim(moves, obstacles));
-  }
-
 }
