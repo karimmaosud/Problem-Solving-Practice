@@ -103,5 +103,4 @@ public class DecodedStringAtIndex {
 
     return solve(runnerObject.object, k_);
   }
-
 }
