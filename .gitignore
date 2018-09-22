@@ -40,5 +40,6 @@ mirak-practice.iml
 .idea/*
 *.xml
 Codeforces/src/main/java/com/mirak/codeforces/rounds/regular/round488
+Codeforces/src/main/java/com/mirak/codeforces/Main.java
 src/*
 */*.iml
