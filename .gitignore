@@ -41,6 +41,7 @@ mirak-practice.iml
 *.xml
 Codeforces/src/main/java/com/mirak/codeforces/rounds/regular/round488
 Codeforces/src/main/java/com/mirak/codeforces/Main.java
+Codeforces/src/main/java/com/mirak/codeforces/rounds/Test.java
 Leetcode/src/com/mirak/leetcode/ignored
 Library/*
 src/*
