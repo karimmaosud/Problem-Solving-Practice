@@ -4,9 +4,9 @@ import java.util.*;
 
 public class LargestComponentSizeByCommonFactor {
 
-  private static int MAXN = 1000010;
+  private int MAXN = 1000010;
 
-  public static int largestComponentSize(int[] A) {
+  public int largestComponentSize(int[] A) {
     ArrayList<Integer> primes = generatePrimes();
 
     Map<Integer, Integer> primeIndex = indexPrimes(primes);
@@ -27,7 +27,8 @@ public class LargestComponentSizeByCommonFactor {
       }
 
       for (int i = 0; i < primeFactors.size(); i++) {
-        unionSet(primeIndex.get(primeFactors.get(0)), primeIndex.get(primeFactors.get(i)), p, count);
+        unionSet(primeIndex.get(primeFactors.get(0)), primeIndex.get(primeFactors.get(i)), p,
+            count);
       }
 
       count[findParent(primeIndex.get(primeFactors.get(0)), p)]++;
@@ -42,7 +43,7 @@ public class LargestComponentSizeByCommonFactor {
     return max;
   }
 
-  private static Map<Integer,Integer> indexPrimes(ArrayList<Integer> primes) {
+  private Map<Integer, Integer> indexPrimes(ArrayList<Integer> primes) {
     Map<Integer, Integer> primeIndex = new HashMap<>();
     for (int i = 0; i < primes.size(); i++) {
       primeIndex.put(primes.get(i), i);
@@ -50,7 +51,7 @@ public class LargestComponentSizeByCommonFactor {
     return primeIndex;
   }
 
-  private static ArrayList<Integer> generatePrimes() {
+  private ArrayList<Integer> generatePrimes() {
     boolean[] flag = new boolean[MAXN];
     Arrays.fill(flag, true);
     flag[0] = flag[1] = false;
@@ -72,7 +73,7 @@ public class LargestComponentSizeByCommonFactor {
     return primes;
   }
 
-  private static ArrayList<Integer> getPrimeFactors(int num, ArrayList<Integer> primes) {
+  private ArrayList<Integer> getPrimeFactors(int num, ArrayList<Integer> primes) {
 
     if (num == 1) {
       return null;
@@ -100,7 +101,7 @@ public class LargestComponentSizeByCommonFactor {
     return primeFactors;
   }
 
-  private static int findParent(int i, int[] p) {
+  private int findParent(int i, int[] p) {
     if (p[i] == i) {
       return i;
     }
@@ -108,7 +109,7 @@ public class LargestComponentSizeByCommonFactor {
     return p[i];
   }
 
-  private static void unionSet(int i, int j, int[] p, int[] count) {
+  private void unionSet(int i, int j, int[] p, int[] count) {
     int pi = findParent(i, p);
     int pj = findParent(j, p);
 
@@ -118,17 +119,5 @@ public class LargestComponentSizeByCommonFactor {
     p[pi] = pj;
     count[pj] += count[pi];
 
-  }
-
-  public static void main(String[] args) {
-    List<Integer> l = new ArrayList<>();
-    for (int i = 0; i < 20000; i++) {
-      l.add(i + 2);
-    }
-    int[] A = new int[l.size()];
-    for (int i = 0; i < l.size(); i++) {
-      A[i] = l.get(i);
-    }
-    System.out.println(largestComponentSize(A));
   }
 }
