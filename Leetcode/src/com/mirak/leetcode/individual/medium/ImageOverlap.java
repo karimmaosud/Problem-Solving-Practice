@@ -36,3 +36,35 @@ public class ImageOverlap {
   }
 }
 
+class ImageOverlap2 {
+
+  public int largestOverlap(int[][] A, int[][] B) {
+    int n = A.length;
+    int maxIntersection = 0;
+    for (int i = 0; i < n; i++) {
+      for (int j = 0; j < n; j++) {
+        maxIntersection = Math
+            .max(maxIntersection, getIntersection(A, B, 0, 0, n - i - 1, n - j - 1, i + 1, j + 1));
+        maxIntersection = Math
+            .max(maxIntersection, getIntersection(A, B, 0, j, n - i - 1, 0, i + 1, n - j));
+        maxIntersection = Math
+            .max(maxIntersection, getIntersection(A, B, i, 0, 0, n - j - 1, n - i, j + 1));
+        maxIntersection = Math
+            .max(maxIntersection, getIntersection(A, B, i, j, 0, 0, n - i, n - j));
+      }
+    }
+    return maxIntersection;
+  }
+
+  private int getIntersection(int[][] A, int[][] B, int ia, int ja, int ib, int jb, int walkRows,
+      int walkColumns) {
+    int res = 0;
+    for (int rowOffset = 0; rowOffset < walkRows; rowOffset++) {
+      for (int columnOffset = 0; columnOffset < walkColumns; columnOffset++) {
+        res += A[ia + rowOffset][ja + columnOffset] & B[ib + rowOffset][jb + columnOffset];
+      }
+    }
+    return res;
+  }
+}
+
