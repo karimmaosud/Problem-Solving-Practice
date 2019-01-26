@@ -1,53 +1,33 @@
 package com.mirak.leetcode.individual.hard;
 
-import java.util.*;
 
 public class MinimizeMaxDistanceToGasStation {
 
-  private class Interval {
-
-    int count;
-    double distance;
-
-    Interval(double distance) {
-      this.count = 1;
-      this.distance = distance;
+  public double minmaxGasDist(int[] stations, int K) {
+    double low = 0.0;
+    double high = 100000000.0;
+    while (high - low > 1e-9) {
+      double mid = (low + high) / 2.0;
+      if (can(stations, K, mid)) {
+        high = mid - 1e-6;
+      } else {
+        low = mid + 1e-6;
+      }
     }
-
-    double getDistance() {
-      return this.distance / this.count;
-    }
-
-    @Override
-    public String toString() {
-      return String.format("distance: %f - count: %d", distance, count);
-    }
+    return low;
   }
 
-  public double minmaxGasDist(int[] stations, int K) {
-    PriorityQueue<Interval> pq = new PriorityQueue<>(new Comparator<Interval>() {
-      @Override
-      public int compare(Interval i1, Interval i2) {
-        double diff = i1.getDistance() - i2.getDistance();
-        if (diff > 0.0) {
-          return -1;
-        }
-        if (diff < 0.0) {
-          return 1;
-        }
-        return i2.count - i1.count;
+  private boolean can(int[] stations, int K, double minDistance) {
+    for (int i = 0; i < stations.length - 1; i++) {
+      double distance = 1.0 * (stations[i + 1] - stations[i]);
+      if (distance <= minDistance) {
+        continue;
       }
-    });
-
-    for (int i = 1; i < stations.length; i++) {
-      pq.add(new Interval(1.0 * (stations[i] - stations[i - 1])));
+      K -= (int) Math.ceil(distance / minDistance) - 1;
+      if (K < 0) {
+        return false;
+      }
     }
-
-    for (int i = 0; i < K; i++) {
-      Interval current = pq.poll();
-      current.count++;
-      pq.add(current);
-    }
-    return pq.poll().getDistance();
+    return true;
   }
 }
