@@ -1,89 +1,83 @@
 package com.mirak.leetcode.individual.hard;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class WordBreakII {
 
-  private class TrieNode {
-    TrieNode[] c;
+  private class Node {
+
+    Node[] c;
     boolean wordEnd;
-    TrieNode() {
-      c = new TrieNode[26];
-      wordEnd = false;
+
+    Node() {
+      this.c = new Node[26];
+      this.wordEnd = false;
     }
   }
 
   private class Trie {
-    TrieNode root;
+
+    Node root;
 
     Trie() {
-      root = new TrieNode();
+      root = new Node();
     }
 
     void insertWord(String word) {
-      TrieNode current = root;
-      for(int i = 0; i < word.length(); i++) {
-        if(current.c[word.charAt(i) - 'a'] == null) {
-          current.c[word.charAt(i) - 'a'] = new TrieNode();
+      Node current = root;
+      for (char a : word.toCharArray()) {
+        if (current.c[a - 'a'] == null) {
+          current.c[a - 'a'] = new Node();
         }
-        current = current.c[word.charAt(i) - 'a'];
+        current = current.c[a - 'a'];
       }
       current.wordEnd = true;
     }
   }
 
   public List<String> wordBreak(String s, List<String> wordDict) {
-    List<String> res = new LinkedList<>();
-    if(s.length() == 0) {
-      return res;
-    }
-    Trie trie = new Trie();
-    for(String word: wordDict) {
-      trie.insertWord(word);
-    }
-    ArrayList<String>[] dp = new ArrayList[s.length() + 1];
-    return solve(0, s, trie, dp);
+    Trie trie = getTrieFromDict(wordDict);
+    ArrayList<String>[] dp = new ArrayList[s.length()];
+    return solve(s, 0, trie, dp);
   }
 
-  private ArrayList<String> solve(int start, String s, Trie trie, ArrayList<String>[] dp) {
-    if(start == s.length()) {
-      return null;
-    }
+  private ArrayList<String> solve(String s, int start, Trie trie, ArrayList<String>[] dp) {
 
-    if(dp[start] != null) {
+    if (dp[start] != null) {
       return dp[start];
     }
 
-    TrieNode node = trie.root;
-
+    Node current = trie.root;
     StringBuilder builder = new StringBuilder();
-
-    ArrayList<String> ans = new ArrayList<>();
-
-    for(int i = start; i < s.length(); i++) {
-      if(node.c[s.charAt(i) - 'a'] == null) {
+    ArrayList<String> list = new ArrayList<>();
+    for (int i = start; i < s.length(); i++) {
+      current = current.c[s.charAt(i) - 'a'];
+      if (current == null) {
         break;
       }
       builder.append(s.charAt(i));
-      node = node.c[s.charAt(i) - 'a'];
-      if(node.wordEnd) {
-        List<String> suffixList = solve(i + 1, s, trie, dp);
-        if(suffixList == null || suffixList.isEmpty()) {
-          if(i + 1 == s.length()){
-            ans.add(builder.toString());
-          }
+      if (current.wordEnd) {
+        if (i == s.length() - 1) {
+          list.add(builder.toString());
           continue;
         }
-        for(String suffix: suffixList) {
-          StringBuilder dummyBuilder = new StringBuilder();
-          dummyBuilder.append(builder).append(" ").append(suffix);
-          ans.add(dummyBuilder.toString());
+        ArrayList<String> next = solve(s, i + 1, trie, dp);
+        for (String right : next) {
+          list.add(builder.toString() + " " + right);
         }
       }
-    }
 
-    return dp[start] = ans;
+    }
+    return dp[start] = list;
   }
+
+
+  private Trie getTrieFromDict(List<String> dict) {
+    Trie trie = new Trie();
+    for (String word : dict) {
+      trie.insertWord(word);
+    }
+    return trie;
+  }
+
 }
