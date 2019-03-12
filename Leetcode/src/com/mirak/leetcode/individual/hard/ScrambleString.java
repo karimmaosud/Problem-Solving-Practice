@@ -4,53 +4,75 @@ import java.util.*;
 
 public class ScrambleString {
 
-  private int[] count = new int[26];
-
   public boolean isScramble(String s1, String s2) {
-    Map<String, Boolean> mem = new HashMap<>();
-    return isScramble(s1, s2, mem);
-  }
-
-  private boolean isScramble(String s1, String s2, Map<String, Boolean> mem) {
-    String hash = s1 + "#" + s2;
-    if (mem.containsKey(hash)) {
-      return mem.get(hash);
-    }
-    if (s1.equals(s2)) {
-      mem.put(hash, true);
+    int n = s1.length();
+    if (n == 0) {
       return true;
     }
-    if (!isAnagrams(s1, s2)) {
-      mem.put(hash, false);
-      return false;
-    }
-    // try all possible swaps.
-    // try also not to swap.
-    for (int l = 1; l < s1.length(); l++) {
-      // try swap with length l.
-      if (isScramble(s1.substring(0, l), s2.substring(s2.length() - l), mem)
-          && isScramble(s1.substring(l), s2.substring(0, s2.length() - l), mem)) {
-        mem.put(hash, true);
-        return true;
-      }
-      if (isScramble(s1.substring(0, l), s2.substring(0, l), mem)
-          && isScramble(s1.substring(l), s2.substring(l), mem)) {
-        mem.put(hash, true);
-        return true;
-      }
-    }
-    mem.put(hash, false);
-    return false;
+    int[][][] dp = new int[n][n][n + 1];
+    init(dp);
+    return solve(s1, s2, 0, 0, n, dp) == 1;
   }
 
-  private boolean isAnagrams(String s1, String s2) {
-    Arrays.fill(count, 0);
-    for (char a : s1.toCharArray()) {
-      count[a - 'a']++;
+  private void init(int[][][] dp) {
+    for (int[][] ar : dp) {
+      for (int[] row : ar) {
+        Arrays.fill(row, -1);
+      }
     }
-    for (char a : s2.toCharArray()) {
-      count[a - 'a']--;
-      if (count[a - 'a'] < 0) {
+  }
+
+  private int solve(String s1, String s2, int l1, int l2, int len, int[][][] dp) {
+
+    if (dp[l1][l2][len] != -1) {
+      return dp[l1][l2][len];
+    }
+
+    if (match(s1, s2, l1, l2, len)) {
+      return dp[l1][l2][len] = 1;
+    }
+
+    if (!isAnagrams(s1, s2, l1, l2, len)) {
+      return dp[l1][l2][len] = 0;
+    }
+
+    for (int i = 1; i < len; i++) {
+      int prefixPrefixMatch =
+          solve(s1, s2, l1, l2, i, dp) & solve(s1, s2, l1 + i, l2 + i, len - i, dp);
+
+      if (prefixPrefixMatch == 1) {
+        return dp[l1][l2][len] = 1;
+      }
+
+      int prefixSuffixMatch =
+          solve(s1, s2, l1, l2 + len - i, i, dp) & solve(s1, s2, l1 + i, l2, len - i, dp);
+
+      if (prefixSuffixMatch == 1) {
+        return dp[l1][l2][len] = 1;
+      }
+    }
+
+    return dp[l1][l2][len] = 0;
+  }
+
+  private boolean match(String s1, String s2, int l1, int l2, int len) {
+    for (int i = 0; i < len; i++) {
+      if (s1.charAt(l1 + i) != s2.charAt(l2 + i)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private boolean isAnagrams(String s1, String s2, int l1, int l2, int len) {
+    int[] count = new int[26];
+    for (int i = 0; i < len; i++) {
+      count[s1.charAt(l1 + i) - 'a']++;
+    }
+
+    for (int i = 0; i < len; i++) {
+      count[s2.charAt(l2 + i) - 'a']--;
+      if (count[s2.charAt(l2 + i) - 'a'] < 0) {
         return false;
       }
     }
