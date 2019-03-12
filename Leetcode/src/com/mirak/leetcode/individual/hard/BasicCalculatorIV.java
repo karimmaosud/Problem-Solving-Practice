@@ -1,4 +1,4 @@
-package com.mirak.leetcode.individual.medium;
+package com.mirak.leetcode.individual.hard;
 
 import java.util.*;
 
