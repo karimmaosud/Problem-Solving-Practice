@@ -3,28 +3,29 @@ package com.mirak.leetcode.individual.hard;
 public class SuperEggDrop {
 
   public int superEggDrop(int K, int N) {
-    int[][] mem = new int[K + 1][N + 1];
-
-    for (int k = 1; k <= K; k++) {
-      int lastIndex = 1;
+    if (K == 1) {
+      return N;
+    }
+    int[][] dp = new int[2][N + 1];
+    for (int i = 1; i <= N; i++) {
+      dp[1][i] = i;
+    }
+    for (int k = 2; k <= K; k++) {
+      int idx = k % 2, prevN = 1, pairedN = 1;
       for (int n = 1; n <= N; n++) {
-        if (k == 1) {
-          mem[k][n] = n;
+        if (n == 1) {
+          dp[idx][n] = 1;
           continue;
         }
-        if (n < 3) {
-          mem[k][n] = n;
-          continue;
-        }
-        // n is at least 3
-        mem[k][n] = 1 + Math
-            .min(mem[k][n - 1], Math.max(mem[k][lastIndex], mem[k - 1][n - lastIndex - 1]));
-        if (mem[k][n] > mem[k][n - 1]) {
-          lastIndex = n - 1;
+        dp[idx][n] = 1 + Math.max(dp[idx][prevN], dp[idx ^ 1][pairedN]);
+        if (dp[idx][n] > dp[idx][n - 1]) {
+          prevN = n - 1;
+          pairedN = 1;
+        } else {
+          pairedN++;
         }
       }
     }
-
-    return mem[K][N];
+    return dp[K % 2][N];
   }
 }
