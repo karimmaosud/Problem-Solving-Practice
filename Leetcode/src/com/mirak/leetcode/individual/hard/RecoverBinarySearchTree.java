@@ -16,44 +16,44 @@ public class RecoverBinarySearchTree {
   }
 
   public void recoverTree(TreeNode root) {
-    LinkedList<TreeNode> runnerList = new LinkedList<>();
-    LinkedList<TreeNode> swappedNodes = new LinkedList<>();
-    inOrdereTraversal(root, runnerList, swappedNodes);
-    if (swappedNodes.size() == 0) {
+    if (root == null) {
       return;
     }
-    TreeNode first = swappedNodes.removeFirst();
-    TreeNode second = swappedNodes.removeFirst();
-    int temp = first.val;
-    first.val = second.val;
-    second.val = temp;
+    LinkedList<TreeNode> list = new LinkedList<>();
+    inorderTraversal(root, list);
+    if (list.size() == 2 && list.getFirst().val > list.getLast().val) {
+      swapNodeValues(list.getFirst(), list.getLast());
+    }
   }
 
-
-  private void inOrdereTraversal(TreeNode node, LinkedList<TreeNode> runnerList,
-      LinkedList<TreeNode> swappedNodes) {
-
+  private void inorderTraversal(TreeNode node, LinkedList<TreeNode> list) {
     if (node == null) {
       return;
     }
 
-    inOrdereTraversal(node.left, runnerList, swappedNodes);
+    inorderTraversal(node.left, list);
 
-    if (runnerList.size() > 0) {
-      TreeNode prev = runnerList.removeLast();
-      if (node.val < prev.val) {
-        // misplaced node.
-        if (swappedNodes.size() > 0) {
-          swappedNodes.removeLast();
-        } else {
-          swappedNodes.add(prev);
-        }
-        swappedNodes.add(node);
+    if (list.size() == 2) {
+      System.out.println(list.getFirst().val + " " + list.getLast().val + " .. " + node.val);
+      if (list.getFirst().val > list.getLast().val && node.val > list.getFirst().val) {
+        swapNodeValues(list.getFirst(), list.getLast());
+      }
+
+      if (list.getFirst().val > list.getLast().val) {
+        list.removeLast();
+      } else {
+        list.removeFirst();
       }
     }
 
-    runnerList.addLast(node);
+    list.addLast(node);
+    inorderTraversal(node.right, list);
+  }
 
-    inOrdereTraversal(node.right, runnerList, swappedNodes);
+
+  private void swapNodeValues(TreeNode n1, TreeNode n2) {
+    int temp = n1.val;
+    n1.val = n2.val;
+    n2.val = temp;
   }
 }
