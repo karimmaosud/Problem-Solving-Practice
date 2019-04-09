@@ -1,159 +1,151 @@
 package com.mirak.leetcode.individual.hard;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class AutocompleteSystem {
+class AutocompleteSystem {
 
-  private class StringWrapper {
+  private class RankedWord implements Comparable<RankedWord> {
 
-    String sentence;
+    int id;
+    String word;
     int rank;
 
-    StringWrapper(String sentence, int rank) {
-      this.sentence = sentence;
+    RankedWord(int id, String word, int rank) {
+      this.id = id;
+      this.word = word;
       this.rank = rank;
+    }
+
+    @Override
+    public int compareTo(RankedWord o) {
+      return this.rank > o.rank ? -1 : this.rank < o.rank ? 1 : this.word.compareTo(o.word);
     }
   }
 
   private class Node {
 
     Node[] c;
-    ArrayList<Integer> indexes;
-    int wordIndex;
+    Set<Integer> set;
 
     Node() {
-      c = new Node[27];
-      indexes = new ArrayList<>();
-      wordIndex = -1;
+      this.c = new Node[27];
+      this.set = new HashSet<>();
+    }
+
+    void insertId(int id) {
+      set.remove(id);
+      set.add(id);
+      if (set.size() > 3) {
+        adjustSet();
+      }
+    }
+
+    void adjustSet() {
+      ArrayList<RankedWord> words = new ArrayList<>();
+      for (int id : set) {
+        words.add(rankedWords.get(id));
+      }
+      Collections.sort(words);
+      set.remove(words.get(words.size() - 1).id);
     }
   }
+
 
   private class Trie {
 
     Node root;
 
     Trie() {
-      root = new Node();
+      this.root = new Node();
+    }
+
+
+    void updateTrieWithWord(String word, int id) {
+      Node current = trie.root;
+      for (char a : word.toCharArray()) {
+        int i = charMapping(a);
+        if (current.c[i] == null) {
+          current.c[i] = new Node();
+        }
+        current = current.c[i];
+        current.insertId(id);
+      }
     }
   }
 
-  private ArrayList<String> emptyList;
-  private ArrayList<String> sentencesList;
-  private ArrayList<Integer> timesList;
+  private Map<Integer, RankedWord> rankedWords;
+  private Map<String, Integer> wordId;
   private Trie trie;
-  private Node runnerNode;
-  private Map<String, StringWrapper> sentenceWrapperMap;
-  private StringBuilder typedWord;
+  private StringBuilder builder;
+  private Node runnerTrieNode;
+
+  private ArrayList<String> emptyList;
 
   public AutocompleteSystem(String[] sentences, int[] times) {
-
-    emptyList = new ArrayList<>();
-    sentencesList = stringArrayToList(sentences);
-    timesList = intArrayToList(times);
+    rankedWords = new HashMap<>();
+    wordId = new HashMap<>();
     trie = new Trie();
-    runnerNode = trie.root;
-    sentenceWrapperMap = new HashMap<>();
-    typedWord = new StringBuilder();
-
-    insertSentencesToTrie();
+    init(sentences, times);
+    builder = new StringBuilder();
+    runnerTrieNode = trie.root;
+    emptyList = new ArrayList<>();
   }
+
 
   public List<String> input(char c) {
     if (c == '#') {
-      if (runnerNode.wordIndex == -1) {
-        String st = typedWord.toString();
-        addSentenceIndexToTrie(st, sentencesList.size());
-        sentenceWrapperMap.put(st, new StringWrapper(st, 1));
+      String current = builder.toString();
+      int id = getWordId(current);
 
-        sentencesList.add(st);
-        timesList.add(1);
+      builder = new StringBuilder();
+      runnerTrieNode = trie.root;
+      if (!rankedWords.containsKey(id)) {
+        wordId.put(current, id);
+        rankedWords.put(id, new RankedWord(id, current, 1));
       } else {
-        sentenceWrapperMap.get(typedWord.toString()).rank++;
-        timesList.set(runnerNode.wordIndex, timesList.get(runnerNode.wordIndex) + 1);
+        // increase rank.
+        rankedWords.get(id).rank++;
       }
-      typedWord = new StringBuilder();
-      runnerNode = trie.root;
+      trie.updateTrieWithWord(current, id);
       return emptyList;
-    }
-    typedWord.append(c);
-    ArrayList<String> result = emptyList;
-    int idx = charToIndex(c);
-    if (runnerNode.c[idx] == null) {
-      runnerNode.c[idx] = new Node();
     } else {
-      result = getRankedSentences(runnerNode.c[idx]);
-    }
-    runnerNode = runnerNode.c[idx];
-    return result;
-  }
+      builder.append(c);
 
-  private void addSentenceIndexToTrie(String word, int index) {
-    Node current = trie.root;
-    for (char c : word.toCharArray()) {
-      int idx = charToIndex(c);
-      current.c[idx].indexes.add(index);
-      current = current.c[idx];
-    }
-    current.wordIndex = index;
-  }
+      int i = charMapping(c);
 
-  private ArrayList<String> getRankedSentences(Node node) {
-    PriorityQueue<StringWrapper> pq = new PriorityQueue<>(new Comparator<StringWrapper>() {
-      @Override
-      public int compare(StringWrapper o1, StringWrapper o2) {
-        int rankDiff = o1.rank - o2.rank;
-        return rankDiff != 0 ? rankDiff : -1 * o1.sentence.compareTo(o2.sentence);
+      if (runnerTrieNode == null) {
+        return emptyList;
       }
-    });
-    for (int index : node.indexes) {
-      pq.add(sentenceWrapperMap.get(sentencesList.get(index)));
-      if (pq.size() > 3) {
-        pq.poll();
+      runnerTrieNode = runnerTrieNode.c[i];
+      if (runnerTrieNode == null) {
+        return emptyList;
       }
-    }
-    ArrayList<String> res = new ArrayList<>();
-    while (!pq.isEmpty()) {
-      res.add(pq.poll().sentence);
-    }
-    Collections.reverse(res);
-    return res;
-  }
-
-  private void insertSentencesToTrie() {
-    for (int i = 0; i < sentencesList.size(); i++) {
-      sentenceWrapperMap
-          .put(sentencesList.get(i), new StringWrapper(sentencesList.get(i), timesList.get(i)));
-
-      Node current = trie.root;
-      for (char a : sentencesList.get(i).toCharArray()) {
-        int idx = charToIndex(a);
-        if (current.c[idx] == null) {
-          current.c[idx] = new Node();
-        }
-        current = current.c[idx];
-        current.indexes.add(i);
+      ArrayList<RankedWord> suggestions = new ArrayList<>();
+      for (int id : runnerTrieNode.set) {
+        suggestions.add(rankedWords.get(id));
       }
-      current.wordIndex = i;
+      Collections.sort(suggestions);
+      return suggestions.stream().map(rankedWord -> rankedWord.word).collect(Collectors.toList());
     }
   }
 
-  private int charToIndex(char a) {
-    return a >= 'a' && a <= 'z' ? a - 'a' : 26;
+  private void init(String[] sentences, int[] times) {
+    for (int i = 0; i < sentences.length; i++) {
+      int id = getWordId(sentences[i]);
+      rankedWords.put(id, new RankedWord(id, sentences[i], times[i]));
+      wordId.put(sentences[i], id);
+    }
+    for (int id : rankedWords.keySet()) {
+      trie.updateTrieWithWord(rankedWords.get(id).word, id);
+    }
   }
 
-  private ArrayList<Integer> intArrayToList(int[] nums) {
-    ArrayList<Integer> res = new ArrayList<>();
-    for (int num : nums) {
-      res.add(num);
-    }
-    return res;
+  private int charMapping(char a) {
+    return a == ' ' ? 26 : a - 'a';
   }
 
-  private ArrayList<String> stringArrayToList(String[] strs) {
-    ArrayList<String> res = new ArrayList<>();
-    for (String str : strs) {
-      res.add(str);
-    }
-    return res;
+  private int getWordId(String word) {
+    return wordId.getOrDefault(word, wordId.size());
   }
 }
