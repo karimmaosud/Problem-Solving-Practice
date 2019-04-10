@@ -4,49 +4,55 @@ import java.util.*;
 
 public class PalindromePartitioningII {
 
-  public int minCut(String s) {
+  private final int INF = 1000000000;
 
-    if (s.length() == 0) {
+  public int minCut(String s) {
+    int n = s.length();
+    if (n == 0) {
       return 0;
     }
-    int[] dp = new int[s.length()];
-    Arrays.fill(dp, -1);
+    int[] dOdd = new int[n];
+    int[] dEven = new int[n];
+    runManacher(s, dOdd, 0);
+    runManacher(s, dEven, 1);
 
-    ArrayList<Integer>[] palindromeLengths = new ArrayList[s.length()];
-    for (int i = 0; i < s.length(); i++) {
-      palindromeLengths[i] = new ArrayList<>();
+    int[] dp = new int[n + 1];
+    Arrays.fill(dp, INF);
+    dp[n] = -1;
+
+    for (int i = n - 1; i >= 0; --i) {
+      for (int j = i; j < n; ++j) {
+        if (isPalindrome(i, j, ((j - i + 1) & 1) == 1 ? dOdd : dEven)) {
+          dp[i] = Math.min(dp[i], 1 + dp[j + 1]);
+        }
+      }
     }
-
-    findPalindromes(s, palindromeLengths, true);
-    findPalindromes(s, palindromeLengths, false);
-    return solve(0, palindromeLengths, dp);
+    return dp[0];
   }
 
-  private void findPalindromes(String s, ArrayList<Integer>[] palindromeLengths,
-      boolean oddPalindrome) {
-    for (int i = 0; i < s.length(); i++) {
-      int l = i;
-      int r = oddPalindrome ? i : i + 1;
-      while (l >= 0 && r < s.length() && s.charAt(l) == s.charAt(r)) {
-        palindromeLengths[l].add(r - l + 1);
-        l--;
-        r++;
+  private void runManacher(String s, int[] d, int even) {
+    int l = 0, r = -1;
+    int n = s.length();
+    for (int i = 0; i < n; ++i) {
+      int k = i > r ? 1 ^ even : Math.min(d[l + r - i + even], r - i);
+      while (i - k - even >= 0 && i + k < n && s.charAt(i - k - even) == s.charAt(i + k)) {
+        k++;
+      }
+      d[i] = k--;
+      if (i + k > r) {
+        r = i + k;
+        l = i - k - even;
       }
     }
   }
 
-  int solve(int index, ArrayList<Integer>[] palindromeLengths, int[] dp) {
-    if (index == palindromeLengths.length) {
-      return -1;
+  private boolean isPalindrome(int i, int j, int[] d) {
+    int len = j - i + 1;
+    int idx = (i + j) / 2 + ((len & 1) == 0 ? 1 : 0);
+    int palindromeLength = 2 * d[idx];
+    if ((len & 1) == 1) {
+      palindromeLength--;
     }
-    if (dp[index] != -1) {
-      return dp[index];
-    }
-    int ans = Integer.MAX_VALUE;
-    for (int i = 0; i < palindromeLengths[index].size(); i++) {
-      ans = Math
-          .min(ans, 1 + solve(index + palindromeLengths[index].get(i), palindromeLengths, dp));
-    }
-    return dp[index] = ans;
+    return palindromeLength >= len;
   }
 }

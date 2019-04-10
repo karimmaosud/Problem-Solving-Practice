@@ -5,55 +5,66 @@ import java.util.*;
 public class PalindromePartitioning {
 
   public List<List<String>> partition(String s) {
-    List<List<String>> palindromePartitions = new LinkedList<>();
-    if (s.length() == 0) {
-      return palindromePartitions;
+
+    int n = s.length();
+    if (n == 0) {
+      return new ArrayList<>();
     }
-    ArrayList<Integer>[] palindromeLengths = new ArrayList[s.length()];
-    for (int i = 0; i < s.length(); i++) {
-      palindromeLengths[i] = new ArrayList<>();
+
+    int[] dEven = new int[n];
+    int[] dOdd = new int[n];
+    runManacher(s, dOdd, 0);
+    runManacher(s, dEven, 1);
+
+    List<List<String>>[] dp = new ArrayList[n + 1];
+    dp[n] = new ArrayList<>();
+    for (int i = n - 1; i >= 0; --i) {
+      dp[i] = new ArrayList<>();
+      for (int j = i; j < n; ++j) {
+        if (isPalindrome(i, j, ((j - i + 1) & 1) == 1 ? dOdd : dEven)) {
+          String current = s.substring(i, j + 1);
+          List<List<String>> partitions = dp[j + 1];
+          if (partitions.isEmpty()) {
+            List<String> newPartition = new ArrayList<>();
+            newPartition.add(current);
+            dp[i].add(newPartition);
+            continue;
+          }
+          for (List<String> partition : partitions) {
+            ArrayList<String> newPartition = new ArrayList<>();
+            newPartition.add(current);
+            newPartition.addAll(partition);
+            dp[i].add(newPartition);
+          }
+        }
+      }
     }
-    findPalindromes(s, palindromeLengths, true);
-    findPalindromes(s, palindromeLengths, false);
-    findAllPartitions(0, new LinkedList<>(), palindromeLengths, palindromePartitions, s);
-    return palindromePartitions;
+    return dp[0];
   }
 
-  private void findPalindromes(String s, ArrayList<Integer>[] palindromeLengths,
-      boolean oddPalindrome) {
-    for (int i = 0; i < s.length(); i++) {
-      int l = i;
-      int r = oddPalindrome ? i : i + 1;
-      while (l >= 0 && r < s.length() && s.charAt(l) == s.charAt(r)) {
-        palindromeLengths[l].add(r - l + 1);
-        l--;
-        r++;
+  private void runManacher(String s, int[] d, int even) {
+    int l = 0, r = -1;
+    int n = s.length();
+    for (int i = 0; i < n; ++i) {
+      int k = i > r ? 1 ^ even : Math.min(d[l + r - i + even], r - i);
+      while (i - k - even >= 0 && i + k < n && s.charAt(i - k - even) == s.charAt(i + k)) {
+        k++;
+      }
+      d[i] = k--;
+      if (i + k > r) {
+        r = i + k;
+        l = i - k - even;
       }
     }
   }
 
-  private void findAllPartitions(int index, LinkedList<Integer> partition,
-      ArrayList<Integer>[] palindromeLengths, List<List<String>> palindromePartitions, String s) {
 
-    if (index == s.length()) {
-      int size = partition.size();
-      List<String> addPartition = new LinkedList<>();
-      int j = 0;
-      for (int i = 0; i < size; i++) {
-        int len = partition.removeFirst();
-        addPartition.add(s.substring(j, j + len));
-        partition.addLast(len);
-        j += len;
-      }
-      palindromePartitions.add(addPartition);
-      return;
+  private boolean isPalindrome(int i, int j, int[] d) {
+    int evenPalindrome = (j + i) & 1;
+    int len = 2 * d[(i + j) / 2 + evenPalindrome];
+    if (evenPalindrome == 0) {
+      len--;
     }
-
-    for (int i = 0; i < palindromeLengths[index].size(); i++) {
-      partition.addLast(palindromeLengths[index].get(i));
-      findAllPartitions(index + palindromeLengths[index].get(i), partition, palindromeLengths,
-          palindromePartitions, s);
-      partition.removeLast();
-    }
+    return len >= j - i + 1;
   }
 }
