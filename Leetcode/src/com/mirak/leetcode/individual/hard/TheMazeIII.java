@@ -8,103 +8,96 @@ public class TheMazeIII {
   private int[] colInc = {0, -1, 1, 0};
   private char[] chars = {'d', 'l', 'r', 'u'};
 
-
   public String findShortestWay(int[][] maze, int[] ball, int[] hole) {
-    return bfs(maze, ball, hole, maze.length, maze[0].length);
+    return bfs(maze, ball, hole);
   }
 
-
-  private String bfs(int[][] maze, int[] ball, int[] hole, int n, int m) {
-
+  private String bfs(int[][] maze, int[] ball, int[] hole) {
+    int n = maze.length;
+    int m = maze[0].length;
     boolean[][][] vis = new boolean[n][m][4];
-    int[][][][] path = new int[n][m][4][3];
+    int[][][][] p = new int[n][m][4][];
 
     Queue<int[]> q = new LinkedList<>();
+    init(vis, p, ball, q, maze);
 
-    int[] start = {ball[0], ball[1], 0};
-
-    setAllDirections(start, vis);
-
-    for (int i = 0; i < rowInc.length; i++) {
-      start[2] = i;
-      if (isEdgeCell(start, maze, n, m)) {
-        continue;
-      }
-      int[] next = getNextCell(start, maze);
-      path[next[0]][next[1]][next[2]] = new int[]{start[0], start[1], start[2]};
-      vis[next[0]][next[1]][next[2]] = true;
-      q.add(next);
-    }
     while (!q.isEmpty()) {
+      int[] state = q.poll();
 
-      int[] current = q.poll();
+      int row = state[0];
+      int col = state[1];
+      int dir = state[2];
 
-      if (current[0] == hole[0] && current[1] == hole[1]) {
+      if (row == hole[0] && col == hole[1]) {
+        // end with the give direction.
         StringBuilder builder = new StringBuilder();
-        builder.append(chars[current[2]]);
-        getPath(current, path, ball, builder);
+        appendPath(p, row, col, dir, ball, builder.append(chars[dir]));
         return builder.reverse().toString();
       }
 
-      if (!isEdgeCell(current, maze, n, m)) {
-        int[] next = getNextCell(current, maze);
-        if (!vis[next[0]][next[1]][next[2]]) {
-          path[next[0]][next[1]][next[2]] = new int[]{current[0], current[1], current[2]};
-          q.add(next);
-          vis[next[0]][next[1]][next[2]] = true;
+      int nextRow = row + rowInc[dir];
+      int nextCol = col + colInc[dir];
+
+      if (isWall(nextRow, nextCol, maze)) {
+        for (int k = 0; k < rowInc.length; ++k) {
+
+          nextRow = row + rowInc[k];
+          nextCol = col + colInc[k];
+
+          vis[row][col][k] = true;
+
+          if (!isWall(nextRow, nextCol, maze)
+              && !vis[nextRow][nextCol][k]) {
+            vis[nextRow][nextCol][k] = true;
+            q.add(new int[]{nextRow, nextCol, k});
+            p[nextRow][nextCol][k] = new int[]{row, col, k};
+            p[row][col][k] = new int[]{row, col, dir};
+          }
         }
         continue;
       }
 
-      setAllDirections(current, vis);
-
-      int prevDirection = current[2];
-
-      for (int i = 0; i < rowInc.length; i++) {
-        current[2] = i;
-        if (isEdgeCell(current, maze, n, m)) {
-          continue;
-        }
-        int[] next = getNextCell(current, maze);
-        if (!vis[next[0]][next[1]][next[2]]) {
-          path[current[0]][current[1]][current[2]] = new int[]{current[0], current[1],
-              prevDirection};
-          path[next[0]][next[1]][next[2]] = new int[]{current[0], current[1], current[2]};
-
-          vis[next[0]][next[1]][next[2]] = true;
-          q.add(next);
-        }
+      if (!vis[nextRow][nextCol][dir]) {
+        vis[nextRow][nextCol][dir] = true;
+        p[nextRow][nextCol][dir] = new int[]{row, col, dir};
+        q.add(new int[]{nextRow, nextCol, dir});
       }
     }
     return "impossible";
   }
 
-  private void getPath(int[] current, int[][][][] path, int[] ball, StringBuilder builder) {
-    if (current[0] == ball[0] && current[1] == ball[1]) {
+
+  private void init(boolean[][][] vis, int[][][][] p, int[] ball, Queue<int[]> q,
+      int[][] maze) {
+    for (int k = 0; k < rowInc.length; ++k) {
+      vis[ball[0]][ball[1]][k] = true;
+
+      if (!isWall(ball[0] + rowInc[k], ball[1] + colInc[k], maze)) {
+        int nextRow = ball[0] + rowInc[k];
+        int nextCol = ball[1] + colInc[k];
+
+        vis[nextRow][nextCol][k] = true;
+        p[nextRow][nextCol][k] = new int[]{ball[0], ball[1], k};
+
+        q.add(new int[]{nextRow, nextCol, k});
+      }
+    }
+  }
+
+  private boolean isWall(int row, int col, int[][] maze) {
+    return row < 0 || col < 0 || row == maze.length || col == maze[0].length || maze[row][col] == 1;
+  }
+
+  private void appendPath(int[][][][] p, int i, int j, int dir, int[] ball,
+      StringBuilder builder) {
+    if (i == ball[0] && j == ball[1]) {
       return;
     }
-    int[] parent = path[current[0]][current[1]][current[2]];
-    if (parent[0] == current[0] && parent[1] == current[1]) {
+    int[] parent = p[i][j][dir];
+    if (i == parent[0] && j == parent[1]) {
+      // change direction.
       builder.append(chars[parent[2]]);
     }
-    getPath(parent, path, ball, builder);
+    appendPath(p, parent[0], parent[1], parent[2], ball, builder);
   }
-
-  private void setAllDirections(int[] cell, boolean[][][] vis) {
-    for (int i = 0; i < rowInc.length; i++) {
-      vis[cell[0]][cell[1]][i] = true;
-    }
-  }
-
-  // Edge cell is the cell that can’t move in the given direction.
-  private boolean isEdgeCell(int[] cell, int[][] maze, int n, int m) {
-    int[] next = {cell[0] + rowInc[cell[2]], cell[1] + colInc[cell[2]]};
-    return next[0] < 0 || next[1] < 0 || next[0] == n || next[1] == m
-        || maze[next[0]][next[1]] != 0;
-  }
-
-  private int[] getNextCell(int[] cell, int[][] maze) {
-    return new int[]{cell[0] + rowInc[cell[2]], cell[1] + colInc[cell[2]], cell[2]};
-  }
-
 }
