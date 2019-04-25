@@ -2,30 +2,27 @@ package com.mirak.leetcode.individual.hard;
 
 public class KInversePairsArray {
 
-  private final long MOD = 1000000007;
+  private final int MOD = 1000000007;
 
   public int kInversePairs(int n, int k) {
-
-    long[][] dp = new long[2][k + 1];
+    int[][] dp = new int[2][k + 1];
     dp[1][0] = 1;
-    long[] sum = new long[k + 1];
-    for (int i = 2; i <= n; i++) {
-      int idx = i % 2;
-
-      sum[0] = dp[idx ^ 1][0];
-
-      for (int j = 1; j <= k; j++) {
-        sum[j] = (sum[j - 1] + dp[idx ^ 1][j]) % MOD;
-      }
-
+    for (int i = 2; i <= n; ++i) {
+      int idx = i & 1;
       dp[idx][0] = 1;
-      for (int j = 1; j <= k; j++) {
-        dp[idx][j] = sum[j];
-        if (j - i >= 0) {
-          dp[idx][j] = (dp[idx][j] - sum[j - i] + MOD) % MOD;
+      int sub = 0;
+      int prefixSum = 1;
+      for (int j = 1; j <= k; ++j) {
+        dp[idx][j] = ((prefixSum + dp[idx ^ 1][j]) % MOD - sub + MOD) % MOD;
+        if (j >= i - 1) {
+          sub = (sub + dp[idx ^ 1][j - i + 1]) % MOD;
+        }
+        prefixSum = (prefixSum + dp[idx ^ 1][j]) % MOD;
+        if (dp[idx][j] == 0) {
+          break;
         }
       }
     }
-    return (int) dp[n % 2][k];
+    return dp[n & 1][k];
   }
 }
